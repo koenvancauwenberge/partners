@@ -3,6 +3,7 @@ from folium import GeoJson
 from streamlit_folium import st_folium
 import geopandas as gpd
 import streamlit as st
+from database import get_bedrijf_postcodes
 
 def maak_kaart(bedrijven_df, geselecteerd_btwnummer, postcodes_df):
     # Selecteer het huidige bedrijf
@@ -43,9 +44,8 @@ def maak_kaart(bedrijven_df, geselecteerd_btwnummer, postcodes_df):
         st.session_state["selected_btwnummer"] = clicked_btwnummer
 
         # Herlaad postcodes
-        postcodes_df = st.session_state["get_bedrijf_postcodes"](clicked_btwnummer)
-        st.session_state["postcodes_df"] = postcodes_df
-        st.experimental_rerun()
+        postcodes_df = get_bedrijf_postcodes(clicked_btwnummer)
+        st.rerun()
 
     # **Verwerk klik op een willekeurig punt**
     if st_map.get("last_clicked"):

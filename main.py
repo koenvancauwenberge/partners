@@ -1,55 +1,61 @@
 import streamlit as st
-from ontwerpsite import laad_home, laad_data_weergave, laad_kaart, laad_instellingen
+from streamlit_option_menu import option_menu
+from ontwerpsite import laad_home , laad_kaart, laad_instellingen
+from database import laad_data_weergave
+from instellingen import load_config
+config = load_config()
 
-# Maak de bovenste horizontale navigatiebalk
-hoofdmenu = st.radio(
-    "Navigatie",
-    ["Home", "Data", "Kaart", "Instellingen"],
-    horizontal=True,
-    label_visibility="collapsed"
+# Hoofdmenu bovenaan de pagina
+selected_main = option_menu(
+    menu_title=None,  # Geen titel voor het hoofdmenu
+    options=["Home", "Data", "Kaart", "Instellingen"],
+    icons=["house", "bar-chart", "map", "gear"],
+    menu_icon="cast",
+    default_index=0,
+    orientation="horizontal",
 )
 
-# Toon het submenu aan de linkerkant afhankelijk van het hoofdmenu
-with st.sidebar:
-    if hoofdmenu == "Home":
-        submenu = st.radio("Home Submenu", ["Submenu 1", "Submenu 2"])
-    elif hoofdmenu == "Data":
-        submenu = st.radio("Data Submenu", ["IBP", "Bizzy", "KBO"])
-    elif hoofdmenu == "Kaart":
-        submenu = st.radio("Kaart Submenu", ["België", "Nederland"])
-    elif hoofdmenu == "Instellingen":
-        submenu = st.radio("Instellingen Submenu", ["Algemene instellingen", "Database instellingen", "Weergave instellingen"])
+# Submenu in de zijbalk afhankelijk van de hoofdmenu-selectie
+if selected_main == "Home":
+    selected_sub = st.sidebar.radio("Home Submenu", ["Submenu 1", "Submenu 2"])
+    laad_home()
+    if selected_sub == "Submenu 1":
+        st.write("Je hebt gekozen voor Home > Submenu 1.")
+    elif selected_sub == "Submenu 2":
+        st.write("Je hebt gekozen voor Home > Submenu 2.")
 
-# Inhoud van de pagina afhankelijk van de keuzes
-if hoofdmenu == "Home":
-    laad_home()  # Laadt de homepagina met het correcte ontwerp
-    if submenu == "Submenu 1":
-        st.write("Je bent op de Homepagina - Submenu 1.")
-    elif submenu == "Submenu 2":
-        st.write("Je bent op de Homepagina - Submenu 2.")
+elif selected_main == "Data":
+    selected_sub = st.sidebar.radio("Data Submenu", ["Bedrijven", "IBP", "Bizzy", "KBO"], index=0)
+    if selected_sub == "Bedrijven":
+        df_bedrijven = laad_data_weergave("Bedrijven")
+        if not df_bedrijven.empty:
+            st.write("Bedrijfsgegevens:", df_bedrijven)
+        else:
+            st.warning("Geen bedrijfsgegevens gevonden.")
+        
+    elif selected_sub == "IBP":
+        df_ibp = laad_data_weergave("IBP")
+        if not df_ibp.empty:
+            st.write("IBP Gegevens:", df_ibp)
+        else:
+            st.warning("Geen IBP-gegevens gevonden.")
+    elif selected_sub == "Bizzy":
+        laad_data_weergave("Bizzy")
+    elif selected_sub == "KBO":
+        laad_data_weergave("KBO")
 
-elif hoofdmenu == "Data":
-    laad_data_weergave()  # Laadt de dataweergave-functionaliteiten
-    if submenu == "IBP":
-        st.write("Dataweergave - IBP data.")
-    elif submenu == "Bizzy":
-        st.write("Dataweergave - Bizzy data.")
-    elif submenu == "KBO":
-        st.write("Dataweergave - KBO data.")
+elif selected_main == "Kaart":
+    selected_sub = st.sidebar.radio("Kaart Submenu", ["België", "Nederland"])
+    laad_kaart()
+    if selected_sub == "België":
+        st.write("Je bekijkt de kaart van België.")
+    elif selected_sub == "Nederland":
+        st.write("Je bekijkt de kaart van Nederland.")
 
-elif hoofdmenu == "Kaart":
-    laad_kaart()  # Laadt de interactieve kaart
-    if submenu == "België":
-        st.write("Kaart van België")
-    elif submenu == "Nederland":
-        st.write("Kaart van Nederland")
+elif selected_main == "Instellingen":
+    selected_sub = st.sidebar.radio("Instellingen Submenu", ["Algemeen", "Database", "Weergave"])
+    laad_instellingen(selected_sub)
 
-elif hoofdmenu == "Instellingen":
-    laad_instellingen()  # Laadt de instellingen
-    if submenu == "Algemene instellingen":
-        st.write("Pas de algemene instellingen aan.")
-    elif submenu == "Database instellingen":
-        st.write("Pas de database-instellingen aan.")
-    elif submenu == "Weergave instellingen":
-        st.write("Pas de weergave-instellingen aan.")
-
+#in cmd
+#eerst cd Desktop\PYTHON\PROJECTS\Partners
+#git add . && git commit -m "update31-01" && git push
